@@ -25,6 +25,7 @@ test("1. OpenAPI 명세는 유효한 스키마와 모든 업무 API의 메서드
   expect(document.paths["/api/health"].get.security).toEqual([]);
   expect(document.security).toEqual([
     { GatewayContext: [], GatewaySignature: [] },
+    { BrowserToken: [] },
   ]);
   expect(document.components.securitySchemes.GatewaySignature.name).toBe(
     "x-notepad-signature",

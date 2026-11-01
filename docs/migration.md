@@ -5,13 +5,13 @@
 원본: `web-notepad` 브랜치 `1.9.35`, 커밋 `863d9659b2177158aac58cb01c30ac13cbde7871`.
 
 - BFF로 이동: `app/api/board`, `app/api/groups`, `app/api/notepad`의 처리·DB·백업 코드, 공유 링크 메타데이터, 서버 전용 테스트 48개와 해당 번호 요구사항.
-- 프런트 유지: Kakao OAuth 시작·callback·로그아웃·세션, OAuth 복귀·공유 링크 검증과 서명, UI 상태·클라이언트 요청, UI 통합 테스트. 기존 API 경로에는 서버 전달 코드만 남습니다.
+- 프런트 유지: Kakao OAuth 시작·callback·로그아웃·세션, OAuth 복귀·공유 링크 검증과 서명, UI 상태·클라이언트 요청, UI 통합 테스트. 프런트의 업무 API 경로는 제거하고 브라우저가 BFF에 직접 요청합니다.
 - 분리된 문서는 양쪽에서 요구사항과 파일 번호를 다시 맞췄습니다. 원래 번호는 `tests/migration.json`에서 추적합니다.
 
 ## 운영 전환 순서
 
 1. BFF를 별도 Next.js 서비스로 배포하고 `NOTEPAD_BFF_SECRET`, 기존 `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`을 비공개 서버 환경 변수로 설정합니다. DB 자체는 이동하거나 복제하지 않습니다.
-2. 기존 AUTH_SECRET은 프런트에 그대로 유지하며 읽거나 복사하지 않습니다. 프런트가 세션·기존 공유 링크 검증과 링크 서명을 담당합니다. BFF에는 별도로 생성한 NOTEPAD_BFF_SECRET만 양쪽에 동일하게 등록합니다. 기존 AUTH_SECRET을 새 키로 덮어쓰지 않습니다.
+2. 기존 AUTH_SECRET은 프런트에 그대로 유지하며 읽거나 복사하지 않습니다. 프런트가 카카오 세션에서 60초짜리 Origin 바인딩 BFF 토큰을 발급하고 기존 공유 링크를 검증합니다. 신규 공유 링크 서명은 BFF가 담당합니다. BFF에는 별도로 생성한 NOTEPAD_BFF_SECRET만 양쪽에 동일하게 등록합니다. 기존 AUTH_SECRET을 새 키로 덮어쓰지 않습니다.
 3. `/api/health`를 확인하고 프리뷰 프런트에서 로그인, 이력 조회, 공유 링크, 보드 조회를 검증합니다. 운영 DB 대상으로 자동 E2E나 테스트 데이터 삽입을 실행하지 않습니다.
 4. 프런트에 BFF HTTPS origin을 `NOTEPAD_BFF_URL`로, 같은 게이트웨이 키를 `NOTEPAD_BFF_SECRET`으로 설정합니다. 카카오 관련 환경 변수와 콜백 주소는 그대로 유지합니다.
 5. BFF가 준비된 뒤 프런트 변경을 배포합니다. 기존 Turso 환경 변수는 프런트 새 코드에서 사용하지 않습니다. 롤백 검증이 끝나기 전에는 기존 배포에 필요한 자격증명을 제거하지 않습니다.

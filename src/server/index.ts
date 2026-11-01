@@ -1,5 +1,6 @@
 export { createDatabaseClient } from "./database";
 export type { GatewayUser } from "./gateway";
+export { gatewayOptions } from "./gateway";
 export {
   currentGatewayUser,
   currentVerifiedShareLink,

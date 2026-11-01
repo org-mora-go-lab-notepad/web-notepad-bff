@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { gatewayOptions } from "@/src/server";
 import { withGateway } from "@/src/server";
 
 import { currentGroupUser } from "./_lib/request";
@@ -23,3 +24,5 @@ async function handleGET() {
 }
 
 export const GET = withGateway(handleGET);
+
+export const OPTIONS = gatewayOptions;

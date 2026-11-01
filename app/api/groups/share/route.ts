@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import type { GroupEntry } from "@/src/4-entity/notepad";
+import { gatewayOptions } from "@/src/server";
 import { withGateway } from "@/src/server";
 
 import {
@@ -59,3 +60,5 @@ async function handlePOST(request: Request) {
 }
 
 export const POST = withGateway(handlePOST);
+
+export const OPTIONS = gatewayOptions;

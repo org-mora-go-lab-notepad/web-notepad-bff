@@ -58,7 +58,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 10개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 보드 전체 상태 집계 1개를 보강해 총 63개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
+BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 10개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 보드 전체 상태 집계 1개를 보강해 총 67개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
 
 `src/4-entity/notepad`에는 API가 사용하는 데이터 계약·정규화 함수만 포함합니다. UI에서도 필요한 순수 모델은 프런트에 유지했으며 서버의 DB·라우트 구현은 이 저장소만 소유합니다. 데이터 계약 변경 시 양쪽 호환성과 프런트 통합 E2E를 함께 검증해야 합니다.
 
@@ -83,3 +83,7 @@ main PR 병합 후에는 main 최신 커밋에서 다음 패치 버전 브랜치
 프런트는 기존 세션으로 확인한 사용자 ID와 기존 키로 검증한 공유 링크의 `{ groupId, version }`을 `NOTEPAD_BFF_SECRET`으로 서명합니다. BFF는 본문 해시·경로·메서드·60초 유효 시간을 검증하고, 공유 참여 시 DB의 활성 상태와 토큰 버전을 확인합니다. 브라우저의 임의 검증 헤더는 프런트가 전달하지 않습니다.
 
 공유 생성·게시판 응답은 내부적으로 `shareLink: { groupId, version }`을 반환합니다. 프런트가 기존 키로 서명해 원래의 `url`·`inviteUrl` 응답으로 바꿉니다. 브라우저 API·기존 URL 형식·사용자 ID·DB 레코드는 유지됩니다. Swagger도 직접 BFF와 프런트 경로 각각의 응답을 표시합니다.
+
+## 브라우저 직접 호출
+
+web-notepad `/api/auth/bff`는 기존 카카오 세션에서 60초짜리 Origin 바인딩 Bearer 토큰을 발급합니다. 업무 요청은 브라우저에서 이 BFF로 직접 전송합니다. CORS preflight는 쿠키 없이 처리하고 실제 요청은 토큰의 서명·만료·Origin을 검증합니다. `NOTEPAD_BFF_SECRET`은 브라우저에 공개하지 않습니다. 기존 서버 서명 방식도 호환됩니다. 신규 공유 링크는 BFF 키로 서명하며 기존 AUTH_SECRET 링크는 인증 경계에서 검증한 단기 권한으로 계속 지원합니다. DB와 사용자 데이터는 변경하지 않습니다.
