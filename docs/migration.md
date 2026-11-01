@@ -37,13 +37,21 @@
 - 최신 버전 브랜치에서 main으로 PR을 병합하면 Production 배포가 자동 시작됩니다. 버전 브랜치 push는 Preview 대상이며 Production 기준을 바꾸지 않습니다.
 - 운영 주소: `https://web-notepad-bff.vercel.app`. `/api/health`는 프로세스 상태만 확인하므로 200 응답이 DB 연결 완료를 의미하지 않습니다.
 - 최초 main 배포는 완료했습니다. 실제 업무 API 연결은 위의 운영 전환 순서에 따라 비공개 환경 변수 등록 후 검증해야 합니다. Swagger는 1.0.1 브랜치에 있으므로 해당 PR 병합 이후 운영에서 제공됩니다.
-- 기존 Vercel Secret 값은 저장 후 다시 읽을 수 없습니다. 기존 DB URL·토큰과 AUTH_SECRET 백업을 사용해야 하며, 공유 링크 유지를 위해 SHARE_TOKEN_SECRET에 기존 AUTH_SECRET을 그대로 등록합니다. 기존 키를 임의로 회전하거나 운영 DB를 초기화하지 않습니다.
+- 기존 Vercel Secret 값은 저장 후 다시 읽을 수 없습니다. DB URL은 기존 DB 주소를 사용하고 토큰은 동일 DB 전용으로 별도 발급할 수 있습니다. 기존 AUTH_SECRET 백업을 사용해야 하며, 공유 링크 유지를 위해 SHARE_TOKEN_SECRET에 기존 AUTH_SECRET을 그대로 등록합니다. 기존 키를 임의로 회전하거나 운영 DB를 초기화하지 않습니다.
 
-| 프로젝트        | Production 환경 변수                 | 값의 출처                          |
-| --------------- | ------------------------------------ | ---------------------------------- |
-| web-notepad-bff | TURSO_DATABASE_URL, TURSO_AUTH_TOKEN | 기존 web-notepad 운영 DB 값        |
-| web-notepad-bff | SHARE_TOKEN_SECRET                   | 기존 web-notepad AUTH_SECRET       |
-| 양쪽 프로젝트   | NOTEPAD_BFF_SECRET                   | 동일한 별도 게이트웨이 키          |
-| web-notepad     | NOTEPAD_BFF_URL                      | https://web-notepad-bff.vercel.app |
+| 프로젝트        | Production 환경 변수                 | 값의 출처                              |
+| --------------- | ------------------------------------ | -------------------------------------- |
+| web-notepad-bff | TURSO_DATABASE_URL, TURSO_AUTH_TOKEN | 기존 DB 주소와 동일 DB의 BFF 전용 토큰 |
+| web-notepad-bff | SHARE_TOKEN_SECRET                   | 기존 web-notepad AUTH_SECRET           |
+| 양쪽 프로젝트   | NOTEPAD_BFF_SECRET                   | 동일한 별도 게이트웨이 키              |
+| web-notepad     | NOTEPAD_BFF_URL                      | https://web-notepad-bff.vercel.app     |
 
 Preview에는 운영 DB 자격증명을 복제하지 않습니다. 검증용 별도 DB와 서명 키를 설정해야 합니다.
+
+## Turso 연결 적용 상태 (2026-11-01)
+
+BFF Production에 `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`을 Secret으로 등록했습니다. 대상은 기존 web-notepad의 `web-notepad-turso` DB이며, 별도 DB나 데이터 복사본을 만들지 않습니다. 기존 프런트의 DB 토큰은 그대로 유지하고 같은 DB에만 접근하는 BFF 전용 토큰을 발급했습니다.
+
+기존 프런트 게시판의 공유 그룹 3개 ID가 해당 DB와 일치함을 확인하고, 새 토큰으로 읽기 조회를 검증했습니다. 이 과정에서 DB 스키마·탭·이력 레코드를 수정하거나 삭제하지 않았습니다. 로컬 개발은 기존 SQLite 파일을 계속 사용합니다.
+
+이번 단계는 DB 연결 설정에 한정됩니다. 전체 프런트/BFF 운영 API 연결에는 양쪽 `NOTEPAD_BFF_SECRET`, BFF의 기존 링크용 `SHARE_TOKEN_SECRET`, 프런트의 `NOTEPAD_BFF_URL` 설정과 별도 검증이 남아 있습니다.
