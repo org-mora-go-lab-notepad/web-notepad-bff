@@ -289,18 +289,17 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "url": {
-                      "type": "string",
-                      "format": "uri"
-                    },
                     "group": {
                       "$ref": "#/components/schemas/GroupEntry"
                     },
                     "revision": {
                       "type": "integer"
+                    },
+                    "shareLink": {
+                      "$ref": "#/components/schemas/ShareLink"
                     }
                   },
-                  "required": ["url", "group", "revision"]
+                  "required": ["shareLink", "group", "revision"]
                 }
               }
             }
@@ -369,7 +368,7 @@
         "operationId": "joinGroup",
         "tags": ["Groups"],
         "summary": "서명된 초대 링크로 참여",
-        "description": "",
+        "description": "Requires verifiedShareLink in the signed gateway context after frontend verification of the original token. An unverified raw token alone is rejected.",
         "responses": {
           "200": {
             "description": "Success",
@@ -1274,12 +1273,11 @@
           "updatedAt": {
             "type": "integer"
           },
-          "inviteUrl": {
-            "type": "string",
-            "format": "uri"
+          "shareLink": {
+            "$ref": "#/components/schemas/ShareLink"
           }
         },
-        "required": ["id", "groupName", "notes", "inviteUrl"]
+        "required": ["id", "groupName", "notes", "shareLink"]
       },
       "GroupEntry": {
         "type": "object",
@@ -1519,6 +1517,15 @@
           "bodyHash": {
             "type": "string",
             "description": "SHA-256 hex of exact UTF-8 body bytes; empty bytes for GET/HEAD."
+          },
+          "verifiedShareLink": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShareLink"
+              }
+            ],
+            "nullable": true,
+            "description": "Only frontend-attested /api/groups/join token claims, covered by the gateway HMAC and original request body hash. BFF still checks enabled/token_version in DB."
           }
         },
         "required": [
@@ -1531,6 +1538,21 @@
           "contentType",
           "bodyHash"
         ]
+      },
+      "ShareLink": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "pattern": "^shared-[0-9a-fA-F-]{36}$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["groupId", "version"],
+        "description": "Unsigned descriptor for frontend signing with its unchanged AUTH_SECRET. Never a browser join credential."
       }
     }
   }

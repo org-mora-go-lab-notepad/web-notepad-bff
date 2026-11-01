@@ -11,7 +11,7 @@ npm run dev
 
 BFF는 `http://localhost:3001`, 프런트는 `http://localhost:3000`에서 실행합니다. 개발 모드에서만 공통 로컬 서명 키와 `file:web-notepad-local.db`를 기본 사용합니다. 기존 로컬 DB를 이어 쓰려면 BFF의 `TURSO_DATABASE_URL`에 기존 파일의 절대 경로를 지정합니다. DB를 복사하거나 비우는 작업은 필요하지 않습니다.
 
-카카오 설정이 있는 로컬 환경은 `SHARE_TOKEN_SECRET`을 프런트의 기존 `AUTH_SECRET`과 동일하게 설정합니다. 기존에 `AUTH_SECRET` 대신 REST API 키로 서명했다면 그 기존 값을 그대로 사용합니다. 키를 바꾸면 기존 공유 링크 검증이 실패합니다.
+기존 AUTH_SECRET을 모르는 경우에도 연동할 수 있습니다. 세션·공유 링크의 검증과 서명은 프런트에 유지하며 기존 키를 변경하지 않습니다. BFF에는 AUTH_SECRET·Kakao 키·SHARE_TOKEN_SECRET이 필요하지 않습니다. 로컬 실행기도 이 키들을 BFF에 전달하지 않습니다.
 
 ## API 경계
 
@@ -21,7 +21,7 @@ BFF는 `http://localhost:3001`, 프런트는 `http://localhost:3000`에서 실�
 | ----------------------------------------- | ----------- | ------------------------------------- |
 | `/api/notepad/history`                    | GET, POST   | 개인 이력, 충돌 검증, 탭 보존         |
 | `/api/groups`                             | GET         | 참여 중인 공유 그룹                   |
-| `/api/groups/share`                       | POST        | 공유 링크 발급                        |
+| `/api/groups/share`                       | POST        | 공유 링크 ID·버전 제공                |
 | `/api/groups/join`                        | POST        | 공유 참여                             |
 | `/api/groups/update`                      | POST        | 공유 데이터 변경·충돌 검증            |
 | `/api/groups/leave`, `/api/groups/revoke` | POST        | 참여 해제·공유 취소                   |
@@ -34,12 +34,11 @@ BFF는 `http://localhost:3001`, 프런트는 `http://localhost:3000`에서 실�
 
 ## 환경 변수
 
-| 변수                                     | 위치·용도                                  |
-| ---------------------------------------- | ------------------------------------------ |
-| `NOTEPAD_BFF_SECRET`                     | 양쪽 서버에 동일한 별도 비밀키, 운영 필수  |
-| `SHARE_TOKEN_SECRET`                     | 기존 공유 링크 HMAC 키 보존, BFF 운영 필수 |
-| `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | 기존 DB 연결, BFF 서버 전용                |
-| `NOTEPAD_BFF_URL`                        | 프런트 서버에만 설정하는 BFF HTTPS origin  |
+| 변수                                     | 위치·용도                                 |
+| ---------------------------------------- | ----------------------------------------- |
+| `NOTEPAD_BFF_SECRET`                     | 양쪽 서버에 동일한 별도 비밀키, 운영 필수 |
+| `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | 기존 DB 연결, BFF 서버 전용               |
+| `NOTEPAD_BFF_URL`                        | 프런트 서버에만 설정하는 BFF HTTPS origin |
 
 서명은 사용자 프로필, 원래 URL·Origin, 메서드, 본문 SHA-256, 발급 시간을 포함합니다. BFF는 60초 이내 요청만 수신하며 원래 요청을 복원해 기존 동일 출처 검증과 공유 링크 주소를 유지합니다. 게이트웨이 키는 카카오 세션 키와 분리하고 브라우저에 노출하지 않습니다. HTTPS가 전송 보안을 제공합니다. 쓰기 요청은 전송 실패 시 프록시에서 자동 재시도하지 않습니다.
 
@@ -59,7 +58,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 8개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 총 60개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
+BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 10개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 총 62개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
 
 `src/4-entity/notepad`에는 API가 사용하는 데이터 계약·정규화 함수만 포함합니다. UI에서도 필요한 순수 모델은 프런트에 유지했으며 서버의 DB·라우트 구현은 이 저장소만 소유합니다. 데이터 계약 변경 시 양쪽 호환성과 프런트 통합 E2E를 함께 검증해야 합니다.
 
@@ -78,3 +77,9 @@ BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경�
 `main`은 배포 기준, 최신 `x.y.z` 브랜치는 개발 기준입니다. 현재 개발 버전은 `1.0.1`입니다. 기존 main(1.0.0)에서 1.0.1을 만들고 package.json과 package-lock.json을 함께 올렸습니다.
 
 main PR 병합 후에는 main 최신 커밋에서 다음 패치 버전 브랜치를 만들고 패키지 버전을 올립니다. 원격·로컬·GitHub Desktop에는 main과 최신 버전 브랜치만 유지합니다. 병합되지 않은 작업을 삭제하지 않으며, 이전 버전 브랜치는 병합·보존 여부를 확인한 뒤 정리합니다. 커밋과 push는 mora-go 계정을 사용합니다.
+
+## 기존 인증 키를 모르는 경우의 연결
+
+프런트는 기존 세션으로 확인한 사용자 ID와 기존 키로 검증한 공유 링크의 `{ groupId, version }`을 `NOTEPAD_BFF_SECRET`으로 서명합니다. BFF는 본문 해시·경로·메서드·60초 유효 시간을 검증하고, 공유 참여 시 DB의 활성 상태와 토큰 버전을 확인합니다. 브라우저의 임의 검증 헤더는 프런트가 전달하지 않습니다.
+
+공유 생성·게시판 응답은 내부적으로 `shareLink: { groupId, version }`을 반환합니다. 프런트가 기존 키로 서명해 원래의 `url`·`inviteUrl` 응답으로 바꿉니다. 브라우저 API·기존 URL 형식·사용자 ID·DB 레코드는 유지됩니다. Swagger도 직접 BFF와 프런트 경로 각각의 응답을 표시합니다.

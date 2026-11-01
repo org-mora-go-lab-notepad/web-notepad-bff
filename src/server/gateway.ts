@@ -19,10 +19,28 @@ type GatewayContext = {
   origin: string | null;
   contentType: string | null;
   bodyHash: string;
+  verifiedShareLink?: { groupId: string; version: number } | null;
 };
 const contextStore = new AsyncLocalStorage<GatewayContext>();
 export function currentGatewayUser() {
   return contextStore.getStore()?.user ?? null;
+}
+
+export function currentVerifiedShareLink() {
+  const context = contextStore.getStore();
+  const link = context?.verifiedShareLink;
+  if (
+    !context ||
+    context.method !== "POST" ||
+    new URL(context.url).pathname !== "/api/groups/join" ||
+    !link ||
+    typeof link.groupId !== "string" ||
+    !/^shared-[0-9a-f-]{36}$/i.test(link.groupId) ||
+    !Number.isSafeInteger(link.version) ||
+    link.version < 0
+  )
+    return null;
+  return link;
 }
 
 export function withGateway(

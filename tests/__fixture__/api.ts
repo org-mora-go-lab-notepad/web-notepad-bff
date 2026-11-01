@@ -2,6 +2,7 @@ import { createHash, createHmac } from "node:crypto";
 
 import {
   type APIRequestContext,
+  type APIResponse,
   type BrowserContext,
   type Page,
   test as base,
@@ -53,6 +54,83 @@ function fixtureUser(value?: string) {
     profileImageUrl: payload.profileImageUrl,
   };
 }
+function fixtureShareLink(body: string) {
+  try {
+    const { token } = JSON.parse(body);
+    if (typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length !== 2 && parts.length !== 3) return null;
+    const payload = parts.slice(0, -1).join(".");
+    if (
+      createHmac("sha256", "test-auth-secret")
+        .update("group-share:" + payload)
+        .digest("base64url") !== parts.at(-1)
+    )
+      return null;
+    return {
+      groupId: parts[0],
+      version: parts.length === 3 ? Number(parts[1]) : 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Emulate only the frontend protocol adapter, never business assertions.
+function frontendResponse(
+  response: APIResponse,
+  original: URL,
+  method: string,
+): APIResponse {
+  if (
+    !response.ok() ||
+    !(
+      (original.pathname === "/api/groups/share" && method === "POST") ||
+      (original.pathname === "/api/board" && method === "GET")
+    )
+  )
+    return response;
+  function url(link: { groupId: string; version: number }) {
+    const payload = link.version
+      ? `${link.groupId}.${link.version}`
+      : link.groupId;
+    const token =
+      payload +
+      "." +
+      createHmac("sha256", "test-auth-secret")
+        .update("group-share:" + payload)
+        .digest("base64url");
+    const result = new URL("/", original);
+    result.searchParams.set("share", token);
+    return result.href;
+  }
+  return new Proxy(response, {
+    get(target, property) {
+      if (property === "json")
+        return async () => {
+          const data = await target.json();
+          if (original.pathname === "/api/groups/share") {
+            const { shareLink, ...rest } = data;
+            return { ...rest, url: url(shareLink) };
+          }
+          return {
+            ...data,
+            posts: data.posts.map(
+              ({
+                shareLink,
+                ...post
+              }: {
+                shareLink: { groupId: string; version: number };
+              }) => ({ ...post, inviteUrl: url(shareLink) }),
+            ),
+          };
+        };
+      const value = Reflect.get(target, property);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
 function signedRequest(
   raw: APIRequestContext,
   context?: BrowserContext,
@@ -86,7 +164,7 @@ function signedRequest(
                 : Buffer.isBuffer(options.data)
                   ? options.data.toString()
                   : JSON.stringify(options.data);
-          return target.fetch(
+          const response = await target.fetch(
             "http://127.0.0.1:3102" + original.pathname + original.search,
             {
               ...options,
@@ -98,6 +176,11 @@ function signedRequest(
                 body,
                 fixtureUser(cookie),
                 {
+                  verifiedShareLink:
+                    original.pathname === "/api/groups/join" &&
+                    method === "POST"
+                      ? fixtureShareLink(body)
+                      : null,
                   origin: headers.get("origin"),
                   contentType:
                     headers.get("content-type") ?? "application/json",
@@ -105,6 +188,7 @@ function signedRequest(
               ),
             },
           );
+          return frontendResponse(response, original, method);
         };
       const value = Reflect.get(target, property);
       return typeof value === "function" ? value.bind(target) : value;

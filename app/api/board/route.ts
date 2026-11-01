@@ -6,12 +6,11 @@ import {
   type SharedGroupData,
 } from "@/src/4-entity/notepad";
 import { withGateway } from "@/src/server";
-import { createGroupShareToken } from "@/src/server";
 
 import { sharedDatabase } from "../groups/_lib/database";
 import { currentGroupUser } from "../groups/_lib/request";
 
-async function handleGET(request: Request) {
+async function handleGET() {
   try {
     const user = await currentGroupUser();
     const database = await sharedDatabase();
@@ -24,15 +23,12 @@ async function handleGET(request: Request) {
       WHERE COALESCE(a.enabled, 1) = 1 ORDER BY g.updated_at DESC, g.id`,
       args: [user?.id ?? ""],
     });
-    const posts: BoardPost[] = result.rows.map((row) => {
+    const posts: (Omit<BoardPost, "inviteUrl"> & {
+      shareLink: { groupId: string; version: number };
+    })[] = result.rows.map((row) => {
       const group = JSON.parse(String(row.snapshot)) as SharedGroupData;
       const tabs = group.tabs.filter(
         (tab) => tab.open && hasBoardVisibleSharedContent(tab.content),
-      );
-      const url = new URL("/", request.url);
-      url.searchParams.set(
-        "share",
-        createGroupShareToken(String(row.id), Number(row.token_version)),
       );
       return {
         id: String(row.id),
@@ -59,7 +55,10 @@ async function handleGET(request: Request) {
         ),
         memberCount: Number(row.member_count),
         updatedAt: Number(row.updated_at),
-        inviteUrl: url.toString(),
+        shareLink: {
+          groupId: String(row.id),
+          version: Number(row.token_version),
+        },
       };
     });
     return NextResponse.json(
