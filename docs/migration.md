@@ -36,7 +36,7 @@
 - 연결 저장소: `org-mora-go-lab-notepad/web-notepad-bff`. Production Branch Tracking은 `main`, 도메인 자동 할당은 활성화합니다.
 - 최신 버전 브랜치에서 main으로 PR을 병합하면 Production 배포가 자동 시작됩니다. 버전 브랜치 push는 Preview 대상이며 Production 기준을 바꾸지 않습니다.
 - 운영 주소: `https://web-notepad-bff.vercel.app`. `/api/health`는 프로세스 상태만 확인하므로 200 응답이 DB 연결 완료를 의미하지 않습니다.
-- 최초 main 배포는 완료했습니다. 실제 업무 API 연결은 위의 운영 전환 순서에 따라 비공개 환경 변수 등록 후 검증해야 합니다. Swagger는 1.0.1 브랜치에 있으므로 해당 PR 병합 이후 운영에서 제공됩니다.
+- 2026-11-01 BFF 1.0.1 및 프런트 1.9.35의 main 배포를 완료했습니다. Swagger는 BFF 운영 /docs에서 제공됩니다.
 - 기존 Vercel Secret 값은 저장 후 다시 읽을 수 없습니다. DB URL은 기존 DB 주소를 사용하고 토큰은 동일 DB 전용으로 별도 발급할 수 있습니다. AUTH_SECRET은 프런트에서만 사용하므로 값을 알거나 BFF로 복사할 필요가 없습니다. 기존 키를 임의로 회전하거나 운영 DB를 초기화하지 않습니다.
 
 | 프로젝트        | Production 환경 변수                 | 값의 출처                              |
@@ -53,10 +53,12 @@ BFF Production에 `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`을 Secret으로 등�
 
 기존 프런트 게시판의 공유 그룹 3개 ID가 해당 DB와 일치함을 확인하고, 새 토큰으로 읽기 조회를 검증했습니다. 이 과정에서 DB 스키마·탭·이력 레코드를 수정하거나 삭제하지 않았습니다. 로컬 개발은 기존 SQLite 파일을 계속 사용합니다.
 
-이번 단계는 DB 연결 설정에 한정됩니다. 전체 프런트/BFF 운영 API 연결에는 양쪽 `NOTEPAD_BFF_SECRET`, 프런트의 `NOTEPAD_BFF_URL` 설정과 별도 검증이 남아 있습니다.
+2026-11-01 운영 API 연결까지 완료했습니다. 이미 등록된 NOTEPAD_BFF_SECRET과 NOTEPAD_BFF_URL을 유지했고, AUTH_SECRET과 기존 카카오 설정은 수정하지 않았습니다. 기존 로그인 세션으로 개인 이력·공유 그룹을 BFF 경유 조회하고 기존 공유 링크 주소가 동일함을 확인했습니다.
 
 ## 계정 데이터 보존 검증
 
-BFF는 별도 복사본이 아닌 기존 `web-notepad-turso` DB를 사용합니다. 현우·이승민을 포함한 기존 사용자 ID를 그대로 전달합니다. 개인 My Group은 사용자별 최신 `notepad_update_history.snapshot`, 공유 정보는 `shared_groups`·`shared_group_members`·접근 상태·이벤트·알림 테이블에 유지됩니다. 브라우저 전용 표시 설정은 기존 프런트 localStorage에 남으며 인증 경계 변경으로 초기화하지 않습니다.
+BFF는 별도 복사본이 아닌 기존 `web-notepad-turso` DB를 사용합니다. 모든 기존 사용자 ID를 그대로 전달합니다. 개인 My Group은 사용자별 최신 `notepad_update_history.snapshot`, 공유 정보는 `shared_groups`·`shared_group_members`·접근 상태·이벤트·알림 테이블에 유지됩니다. 브라우저 전용 표시 설정은 기존 프런트 localStorage에 남으며 인증 경계 변경으로 초기화하지 않습니다.
 
 배포 전후 8개 업무 테이블을 읽기 전용으로 비교합니다. 탭 ID·본문·그룹·북마크·이력·멤버십을 대상으로 하며, 동시 사용자 변경이 있으면 변경분을 분리해서 검토합니다. 검증 목적으로 운영에 가입·저장·삭제 요청을 만들지 않습니다. 기존 배포로 롤백해도 같은 DB를 사용하므로 데이터를 되감지 않습니다.
+
+운영 전후 비교에서 개인 이력·멤버십·접근 상태·알림·백업은 동일했고, 공유 탭 ID는 모두 보존됐습니다. 작업 중 기존 프런트에서 발생한 정상 수정 이벤트는 유지했으며 이를 덮어쓰거나 롤백하지 않았습니다. 로컬 전체 E2E는 프런트 707개와 BFF 62개가 통과했고, 양쪽 PR의 GitHub CI도 통과했습니다.

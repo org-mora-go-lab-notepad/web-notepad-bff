@@ -58,7 +58,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 10개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 총 62개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
+BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 10개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 보드 전체 상태 집계 1개를 보강해 총 63개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
 
 `src/4-entity/notepad`에는 API가 사용하는 데이터 계약·정규화 함수만 포함합니다. UI에서도 필요한 순수 모델은 프런트에 유지했으며 서버의 DB·라우트 구현은 이 저장소만 소유합니다. 데이터 계약 변경 시 양쪽 호환성과 프런트 통합 E2E를 함께 검증해야 합니다.
 
@@ -74,7 +74,7 @@ BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경�
 
 ## 브랜치와 버전
 
-`main`은 배포 기준, 최신 `x.y.z` 브랜치는 개발 기준입니다. 현재 개발 버전은 `1.0.1`입니다. 기존 main(1.0.0)에서 1.0.1을 만들고 package.json과 package-lock.json을 함께 올렸습니다.
+`main`은 배포 기준, 최신 `x.y.z` 브랜치는 개발 기준입니다. 현재 개발 버전은 `1.0.2`입니다. 배포 완료한 main에서 다음 패치 브랜치를 만들고 package.json과 package-lock.json을 함께 올립니다.
 
 main PR 병합 후에는 main 최신 커밋에서 다음 패치 버전 브랜치를 만들고 패키지 버전을 올립니다. 원격·로컬·GitHub Desktop에는 main과 최신 버전 브랜치만 유지합니다. 병합되지 않은 작업을 삭제하지 않으며, 이전 버전 브랜치는 병합·보존 여부를 확인한 뒤 정리합니다. 커밋과 push는 mora-go 계정을 사용합니다.
 

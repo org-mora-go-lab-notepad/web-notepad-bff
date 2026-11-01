@@ -1256,6 +1256,7 @@
             "type": "string"
           },
           "noteCount": {
+            "description": "Total nonblank tabs across Note, To Do, Ready, Doing, and Done, including tabs closed in the editor.",
             "type": "integer"
           },
           "bookmarkCount": {
