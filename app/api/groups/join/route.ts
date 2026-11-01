@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { withGateway } from "@/src/server";
-import { groupShareVersion, readGroupShareToken } from "@/src/server";
+import { currentVerifiedShareLink } from "@/src/server";
 
 import {
   currentGroupUser,
@@ -21,15 +21,11 @@ async function handlePOST(request: Request) {
     payload && typeof payload === "object"
       ? (payload as { token?: unknown }).token
       : null;
-  const id = typeof token === "string" ? readGroupShareToken(token) : null;
-  if (!id)
+  const link = typeof token === "string" ? currentVerifiedShareLink() : null;
+  if (!link)
     return NextResponse.json({ error: "Invalid share link" }, { status: 400 });
   try {
-    const group = await joinSharedGroup(
-      user,
-      id,
-      groupShareVersion(token as string),
-    );
+    const group = await joinSharedGroup(user, link.groupId, link.version);
     if (!group)
       return NextResponse.json({ error: "Group unavailable" }, { status: 404 });
     return NextResponse.json({ group });

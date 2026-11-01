@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import type { GroupEntry } from "@/src/4-entity/notepad";
 import { withGateway } from "@/src/server";
-import { createGroupShareToken } from "@/src/server";
 
 import {
   currentGroupUser,
@@ -43,13 +42,11 @@ async function handlePOST(request: Request) {
     const shared = await createOrGetSharedGroup(user, group);
     if (!shared)
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    const url = new URL("/", request.url);
-    url.searchParams.set(
-      "share",
-      createGroupShareToken(shared.record.id, shared.record.shareVersion),
-    );
     return NextResponse.json({
-      url: url.toString(),
+      shareLink: {
+        groupId: shared.record.id,
+        version: shared.record.shareVersion,
+      },
       group: shared.group,
       revision: shared.record.revision,
     });

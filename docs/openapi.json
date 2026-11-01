@@ -1,0 +1,1559 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Web Notepad BFF API",
+    "version": "1.0.1",
+    "description": "카카오 OAuth/세션은 web-notepad에 유지합니다. BFF는 매 요청의 x-notepad-context + x-notepad-signature를 검증합니다.\n\n로컬 로그인 세션으로 실행하려면 http://localhost:3000/docs 를 사용하세요. 직접 호출: context=base64url(UTF-8 JSON GatewayContext), signature=base64url(HMAC-SHA256(NOTEPAD_BFF_SECRET, context)). 메서드·경로·query·본문이 변경되면 새 서명이 필요합니다. 서버 비밀키를 Swagger/브라우저에 입력하지 마세요.\n\n변경 요청은 실제 데이터를 변경합니다. 사용자 승인 없는 탭 삭제/자동 정리를 하지 않습니다."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Current BFF origin (server-signed requests)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health"
+    },
+    {
+      "name": "History"
+    },
+    {
+      "name": "Groups"
+    },
+    {
+      "name": "Notifications"
+    },
+    {
+      "name": "Board"
+    }
+  ],
+  "security": [
+    {
+      "GatewayContext": [],
+      "GatewaySignature": []
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": ["Health"],
+        "summary": "서비스 상태 조회",
+        "description": "Checks the service process without accessing or changing the database.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "service": {
+                      "type": "string",
+                      "enum": ["web-notepad-bff"]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["ok"]
+                    }
+                  },
+                  "required": ["service", "status"]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/notepad/history": {
+      "get": {
+        "operationId": "getHistory",
+        "tags": ["History"],
+        "summary": "개인 최신 이력 조회",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "latest": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/HistoryEntry"
+                        }
+                      ],
+                      "nullable": true
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["latest", "count"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "saveHistory",
+        "tags": ["History"],
+        "summary": "개인 스냅샷 저장",
+        "description": "Preserves existing records. Omitted tabs require verified transfer/deletion intent. Never automatically cleans up short or empty notes.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "saved": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["saved"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict; latest server snapshot and protected IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": ["Conflict"]
+                    },
+                    "latest": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/HistoryEntry"
+                        }
+                      ],
+                      "nullable": true
+                    },
+                    "protectedTabIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": ["error", "latest"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups": {
+      "get": {
+        "operationId": "listGroups",
+        "tags": ["Groups"],
+        "summary": "참여 중인 공유 그룹 조회",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groups": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SharedRecord"
+                      }
+                    }
+                  },
+                  "required": ["groups"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/share": {
+      "post": {
+        "operationId": "shareGroup",
+        "tags": ["Groups"],
+        "summary": "공유 링크 생성 또는 재사용",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "group": {
+                      "$ref": "#/components/schemas/GroupEntry"
+                    },
+                    "revision": {
+                      "type": "integer"
+                    },
+                    "shareLink": {
+                      "$ref": "#/components/schemas/ShareLink"
+                    }
+                  },
+                  "required": ["shareLink", "group", "revision"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "group": {
+                    "$ref": "#/components/schemas/GroupEntry"
+                  }
+                },
+                "required": ["group"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/join": {
+      "post": {
+        "operationId": "joinGroup",
+        "tags": ["Groups"],
+        "summary": "서명된 초대 링크로 참여",
+        "description": "Requires verifiedShareLink in the signed gateway context after frontend verification of the original token. An unverified raw token alone is rejected.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "group": {
+                      "$ref": "#/components/schemas/SharedRecord"
+                    }
+                  },
+                  "required": ["group"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "share query parameter from the original frontend invite URL."
+                  }
+                },
+                "required": ["token"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/update": {
+      "post": {
+        "operationId": "updateGroup",
+        "tags": ["Groups"],
+        "summary": "공유 그룹 변경 저장",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "group": {
+                      "$ref": "#/components/schemas/SharedRecord"
+                    }
+                  },
+                  "required": ["group"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or unsafe missing tabs; do not overwrite server data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "group": {
+                      "$ref": "#/components/schemas/SharedRecord"
+                    },
+                    "reset": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["group"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/leave": {
+      "post": {
+        "operationId": "leaveGroup",
+        "tags": ["Groups"],
+        "summary": "공유 그룹 나가기",
+        "description": "Membership changes only. The owner cannot leave their own shared group.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["ok"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^shared-[0-9a-fA-F-]{36}$"
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/revoke": {
+      "post": {
+        "operationId": "revokeGroup",
+        "tags": ["Groups"],
+        "summary": "소유자의 공유 취소",
+        "description": "Owner only. Disables sharing and rotates invite version; preserves group/tab data.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["ok"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^shared-[0-9a-fA-F-]{36}$"
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/notifications": {
+      "get": {
+        "operationId": "listNotifications",
+        "tags": ["Notifications"],
+        "summary": "알림 조회",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notifications": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notification"
+                      }
+                    }
+                  },
+                  "required": ["notifications"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "clearNotifications",
+        "tags": ["Notifications"],
+        "summary": "현재 사용자의 알림 숨김",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cleared": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["cleared"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/notifications/read": {
+      "post": {
+        "operationId": "readNotifications",
+        "tags": ["Notifications"],
+        "summary": "알림 읽음 처리",
+        "description": "Empty request body marks all notifications read. If a body is present, a positive integer id is required.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "read": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["read"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid Origin, owner or account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/board": {
+      "get": {
+        "operationId": "listBoard",
+        "tags": ["Board"],
+        "summary": "공유 게시판 목록 조회",
+        "description": "A signed anonymous user (user:null) is allowed. Browser login cookies alone are not BFF authentication.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "posts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BoardPost"
+                      }
+                    }
+                  },
+                  "required": ["posts"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid gateway signature or login session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or backend unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "GatewayContext": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-notepad-context",
+        "description": "Base64url of signed GatewayContext JSON, not a server secret."
+      },
+      "GatewaySignature": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-notepad-signature",
+        "description": "Per-request HMAC signature, never enter NOTEPAD_BFF_SECRET here."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": ["error"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "profileImageUrl": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "nickname"]
+      },
+      "NoteTab": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "content": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "savedContent": {
+            "type": "string"
+          },
+          "bookmarked": {
+            "type": "boolean"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "tabColor": {
+            "type": "string"
+          },
+          "dashboardStatus": {
+            "type": "string",
+            "enum": ["note", "todo", "ready", "doing", "done"]
+          },
+          "selectedLines": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "updatedAt": {
+            "type": "integer"
+          }
+        },
+        "required": ["id", "content"]
+      },
+      "Bookmark": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "sourceTabId": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "selectedLines": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "tabColor": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          }
+        },
+        "required": ["id", "sourceTabId", "content"]
+      },
+      "SharedGroupData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^shared-[0-9a-fA-F-]{36}$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NoteTab"
+            }
+          },
+          "bookmarks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Bookmark"
+            }
+          },
+          "dashboardStatusNames": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["id", "name", "tabs", "bookmarks"]
+      },
+      "SharedRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^shared-[0-9a-fA-F-]{36}$"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SharedGroupData"
+          },
+          "updatedAt": {
+            "type": "integer"
+          },
+          "sharingActive": {
+            "type": "boolean"
+          },
+          "shareVersion": {
+            "type": "integer"
+          }
+        },
+        "required": ["id", "ownerId", "revision", "data"]
+      },
+      "HistoryEntry": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "snapshot": {
+            "type": "string",
+            "description": "JSON serialized snapshot; groups, closedTabs and settings are required."
+          },
+          "createdAt": {
+            "type": "integer"
+          }
+        },
+        "required": ["eventId", "snapshot", "createdAt"]
+      },
+      "MovedTab": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "content"]
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "groupId": {
+            "type": "string",
+            "pattern": "^shared-[0-9a-fA-F-]{36}$"
+          },
+          "tabId": {
+            "type": "string"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": "string"
+          },
+          "actorName": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "unread": {
+            "type": "boolean"
+          }
+        }
+      },
+      "BoardPost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^shared-[0-9a-fA-F-]{36}$"
+          },
+          "viewerRole": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["owner", "member", null]
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "noteCount": {
+            "type": "integer"
+          },
+          "bookmarkCount": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NoteTab"
+            }
+          },
+          "memberCount": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          },
+          "shareLink": {
+            "$ref": "#/components/schemas/ShareLink"
+          }
+        },
+        "required": ["id", "groupName", "notes", "shareLink"]
+      },
+      "GroupEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,128}$",
+            "description": "ungrouped cannot be shared."
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NoteTab"
+            }
+          },
+          "bookmarks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Bookmark"
+            }
+          },
+          "dashboardStatusNames": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "activeTabId": {
+            "type": "string"
+          },
+          "rightTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeRightTabId": {
+            "type": "string",
+            "nullable": true
+          },
+          "leftBottomTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeLeftBottomTabId": {
+            "type": "string",
+            "nullable": true
+          },
+          "rightBottomTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeRightBottomTabId": {
+            "type": "string",
+            "nullable": true
+          },
+          "activePane": {
+            "type": "string",
+            "enum": ["left", "right", "left-bottom", "right-bottom"]
+          },
+          "splitRatio": {
+            "type": "number"
+          },
+          "leftRowRatio": {
+            "type": "number"
+          },
+          "rightRowRatio": {
+            "type": "number"
+          },
+          "pinned": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tabs",
+          "bookmarks",
+          "activeTabId",
+          "rightTabIds",
+          "leftBottomTabIds",
+          "rightBottomTabIds"
+        ]
+      },
+      "HistoryUpdate": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Generate a new UUID for each logical update; repeat IDs are idempotent."
+          },
+          "snapshot": {
+            "type": "string",
+            "maxLength": 5000000,
+            "description": "JSON string with groups, closedTabs and settings. Missing existing tabs are protected."
+          },
+          "baseEventId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string"
+          },
+          "deletedTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "maxItems": 1000,
+            "default": []
+          },
+          "emptyClosedTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "maxItems": 1000,
+            "default": [],
+            "description": "Only explicit individual empty-close intent at the matching revision. No automatic cleanup."
+          },
+          "movedTabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovedTab"
+            }
+          }
+        },
+        "required": ["eventId", "snapshot"]
+      },
+      "GroupUpdate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^shared-[0-9a-fA-F-]{36}$"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "data": {
+            "$ref": "#/components/schemas/SharedGroupData"
+          },
+          "deletedTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "maxItems": 1000,
+            "default": []
+          },
+          "movedTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "maxItems": 1000,
+            "default": []
+          },
+          "emptyClosedTabIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "maxItems": 1000,
+            "default": []
+          },
+          "movedTabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovedTab"
+            }
+          },
+          "confirmedDeletion": {
+            "type": "boolean",
+            "default": false,
+            "description": "Only after explicit authorization for the targeted deletion. Moving and closing tabs do not imply bulk deletion."
+          }
+        },
+        "required": ["id", "baseRevision", "data"]
+      },
+      "GatewayContext": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "enum": [1]
+          },
+          "issuedAt": {
+            "type": "integer",
+            "description": "Unix milliseconds; valid for 60 seconds (5 seconds future skew)."
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original frontend URL including path and query."
+          },
+          "method": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "bodyHash": {
+            "type": "string",
+            "description": "SHA-256 hex of exact UTF-8 body bytes; empty bytes for GET/HEAD."
+          },
+          "verifiedShareLink": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShareLink"
+              }
+            ],
+            "nullable": true,
+            "description": "Only frontend-attested /api/groups/join token claims, covered by the gateway HMAC and original request body hash. BFF still checks enabled/token_version in DB."
+          }
+        },
+        "required": [
+          "version",
+          "issuedAt",
+          "user",
+          "url",
+          "method",
+          "origin",
+          "contentType",
+          "bodyHash"
+        ]
+      },
+      "ShareLink": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "pattern": "^shared-[0-9a-fA-F-]{36}$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["groupId", "version"],
+        "description": "Unsigned descriptor for frontend signing with its unchanged AUTH_SECRET. Never a browser join credential."
+      }
+    }
+  }
+}
