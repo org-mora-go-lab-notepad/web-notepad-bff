@@ -32,6 +32,9 @@
     {
       "GatewayContext": [],
       "GatewaySignature": []
+    },
+    {
+      "BrowserToken": []
     }
   ],
   "paths": {
@@ -996,6 +999,11 @@
         "in": "header",
         "name": "x-notepad-signature",
         "description": "Per-request HMAC signature, never enter NOTEPAD_BFF_SECRET here."
+      },
+      "BrowserToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "60-second origin-bound credential issued by web-notepad /api/auth/bff from the Kakao session. Never enter a server secret."
       }
     },
     "schemas": {

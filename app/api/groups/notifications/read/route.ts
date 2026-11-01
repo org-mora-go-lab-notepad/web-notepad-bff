@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { gatewayOptions } from "@/src/server";
 import { withGateway } from "@/src/server";
 
 import { currentGroupUser, isSameOrigin } from "../../_lib/request";
@@ -42,3 +43,5 @@ async function handlePOST(request: Request) {
 }
 
 export const POST = withGateway(handlePOST);
+
+export const OPTIONS = gatewayOptions;

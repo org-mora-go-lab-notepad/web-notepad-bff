@@ -5,6 +5,7 @@ import {
   hasBoardVisibleSharedContent,
   type SharedGroupData,
 } from "@/src/4-entity/notepad";
+import { gatewayOptions } from "@/src/server";
 import { withGateway } from "@/src/server";
 
 import { sharedDatabase } from "../groups/_lib/database";
@@ -74,3 +75,5 @@ async function handleGET() {
 }
 
 export const GET = withGateway(handleGET);
+
+export const OPTIONS = gatewayOptions;

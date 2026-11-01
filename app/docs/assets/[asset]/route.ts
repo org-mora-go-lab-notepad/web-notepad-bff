@@ -10,7 +10,7 @@ export async function GET(
     return new Response(
       `window.ui = SwaggerUIBundle({
     url: "/docs/openapi.json", dom_id: "#swagger-ui", deepLinking: true,
-    validatorUrl: null, persistAuthorization: false, withCredentials: true,
+    validatorUrl: null, persistAuthorization: false, withCredentials: false,
     displayRequestDuration: true, defaultModelsExpandDepth: 0,
     presets: [SwaggerUIBundle.presets.apis], layout: "BaseLayout"
   });`,

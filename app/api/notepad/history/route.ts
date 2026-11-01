@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { sanitizeCloudSnapshot } from "@/src/4-entity/notepad/persistence";
+import { gatewayOptions } from "@/src/server";
 import { withGateway } from "@/src/server";
 import { currentGatewayUser } from "@/src/server";
 
@@ -140,3 +141,5 @@ async function handlePOST(request: Request) {
 
 export const GET = withGateway(handleGET);
 export const POST = withGateway(handlePOST);
+
+export const OPTIONS = gatewayOptions;

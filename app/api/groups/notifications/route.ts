@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { gatewayOptions } from "@/src/server";
 import { withGateway } from "@/src/server";
 
 import { currentGroupUser, isSameOrigin } from "../_lib/request";
@@ -44,3 +45,5 @@ async function handleDELETE(request: Request) {
 
 export const GET = withGateway(handleGET);
 export const DELETE = withGateway(handleDELETE);
+
+export const OPTIONS = gatewayOptions;
