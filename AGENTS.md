@@ -41,3 +41,7 @@ Generate and edit code using the repository Prettier configuration. Run `npm run
 ## Backend Boundary
 
 Kakao OAuth and browser sessions belong to web-notepad. All business API routes must use withGateway. Never accept unsigned user IDs or forward browser cookies. Keep API payloads and database revisions compatible with web-notepad. Test only with the isolated local database.
+
+## Branch Strategy
+
+Maintain main and the latest version branch only, as in web-notepad. Work on the version branch, never directly on main. After an authorized PR merge, create the next patch version branch from updated main and bump package.json and package-lock.json together. Before removing older branches, confirm their changes are merged or preserved; never discard unmerged work. Use mora-go for commits and pushes.

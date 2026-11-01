@@ -30,7 +30,7 @@ BFF는 `http://localhost:3001`, 프런트는 `http://localhost:3000`에서 실�
 | `/api/board`                              | GET         | 게시판 목록                           |
 | `/api/health`                             | GET         | DB를 변경하지 않는 프로세스 상태 확인 |
 
-인증 관련 `/api/auth/**`는 이 서비스에 없습니다. health를 제외한 API는 프런트 서버 서명이 필요합니다. 브라우저가 BFF를 직접 호출하거나 임의 사용자 ID를 헤더에 담아 호출하는 방식은 지원하지 않습니다. CORS나 공유 쿠키 도메인 설정은 필요하지 않습니다.
+인증 관련 `/api/auth/**`는 이 서비스에 없습니다. health·OpenAPI 문서를 제외한 API는 프런트 서버 서명이 필요합니다. 브라우저가 BFF를 직접 호출하거나 임의 사용자 ID를 헤더에 담아 호출하는 방식은 지원하지 않습니다. CORS나 공유 쿠키 도메인 설정은 필요하지 않습니다.
 
 ## 환경 변수
 
@@ -59,8 +59,22 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 8개와 개인·공유 동시 저장 1개를 추가했습니다. 총 57개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
+BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 8개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 총 60개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
 
 `src/4-entity/notepad`에는 API가 사용하는 데이터 계약·정규화 함수만 포함합니다. UI에서도 필요한 순수 모델은 프런트에 유지했으며 서버의 DB·라우트 구현은 이 저장소만 소유합니다. 데이터 계약 변경 시 양쪽 호환성과 프런트 통합 E2E를 함께 검증해야 합니다.
 
 로컬 SQLite는 개인·공유 API가 요청 단위 대기열을 공유해 동시 쓰기 잠금과 트랜잭션 중 조회 충돌을 방지합니다. 원격 Turso 연결과 트랜잭션·삭제 보호 규칙은 유지합니다.
+
+## Swagger
+
+- [http://localhost:3001/docs](http://localhost:3001/docs): Swagger UI
+- [http://localhost:3001/api/openapi](http://localhost:3001/api/openapi): OpenAPI 3.0 JSON
+- 프런트와 함께 실행: web-notepad에서 `npm run dev:local`. [http://localhost:3000/docs](http://localhost:3000/docs)에서는 프런트에 로그인한 세션으로 Try it out을 사용할 수 있습니다. 카카오 인증·Origin 검증은 기존 API가 수행합니다.
+- BFF 직접 호출은 health 외에 컨텍스트·본문·메서드에 대한 요청별 HMAC 서명이 필요합니다. 서버 비밀키를 Swagger 입력란에 입력하지 않습니다.
+- UI 자산은 npm의 swagger-ui-dist를 로컬에서 제공하며 외부 CDN이나 외부 명세 검증 서버를 호출하지 않습니다. [공식 설치 문서](https://swagger.io/docs/open-source-tools/swagger-ui/usage/installation/)의 서버용 배포 방식을 사용합니다.
+
+## 브랜치와 버전
+
+`main`은 배포 기준, 최신 `x.y.z` 브랜치는 개발 기준입니다. 현재 개발 버전은 `1.0.1`입니다. 기존 main(1.0.0)에서 1.0.1을 만들고 package.json과 package-lock.json을 함께 올렸습니다.
+
+main PR 병합 후에는 main 최신 커밋에서 다음 패치 버전 브랜치를 만들고 패키지 버전을 올립니다. 원격·로컬·GitHub Desktop에는 main과 최신 버전 브랜치만 유지합니다. 병합되지 않은 작업을 삭제하지 않으며, 이전 버전 브랜치는 병합·보존 여부를 확인한 뒤 정리합니다. 커밋과 push는 mora-go 계정을 사용합니다.
