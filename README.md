@@ -11,11 +11,11 @@ npm run dev
 
 BFF는 `http://localhost:3001`, 프런트는 `http://localhost:3000`에서 실행합니다. 개발 모드에서만 공통 로컬 서명 키와 `file:web-notepad-local.db`를 기본 사용합니다. 기존 로컬 DB를 이어 쓰려면 BFF의 `TURSO_DATABASE_URL`에 기존 파일의 절대 경로를 지정합니다. DB를 복사하거나 비우는 작업은 필요하지 않습니다.
 
-기존 AUTH_SECRET을 모르는 경우에도 연동할 수 있습니다. 세션·공유 링크의 검증과 서명은 프런트에 유지하며 기존 키를 변경하지 않습니다. BFF에는 AUTH_SECRET·Kakao 키·SHARE_TOKEN_SECRET이 필요하지 않습니다. 로컬 실행기도 이 키들을 BFF에 전달하지 않습니다.
+기존 AUTH_SECRET을 모르는 경우에도 연동할 수 있습니다. 카카오 세션과 기존 공유 링크 검증은 프런트에 유지하며 기존 키를 변경하지 않습니다. 신규 공유 링크는 BFF 전용 키로 서명합니다. BFF에는 AUTH_SECRET·Kakao 키·SHARE_TOKEN_SECRET이 필요하지 않습니다. 로컬 실행기도 이 키들을 BFF에 전달하지 않습니다.
 
 ## API 경계
 
-브라우저 → web-notepad `/api/...` → 서명된 서버 요청 → web-notepad-bff `/api/...` → 기존 Turso DB.
+브라우저 → web-notepad `/api/auth/bff`에서 카카오 세션 기반 단기 토큰 발급 → web-notepad-bff `/api/...` 직접 호출 → 기존 Turso DB. 기존 서버 게이트웨이 서명 요청도 호환됩니다.
 
 | 경로                                      | 메서드      | 책임                                  |
 | ----------------------------------------- | ----------- | ------------------------------------- |
