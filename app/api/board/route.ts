@@ -41,7 +41,7 @@ async function handleGET() {
         ownerName: String(row.owner_name ?? ""),
         title: group.name,
         description: "",
-        noteCount: tabs.length,
+        noteCount: group.tabs.filter((tab) => tab.content.trim()).length,
         bookmarkCount: tabs.filter((tab) => tab.bookmarked).length,
         notes: tabs.map(
           ({ id, title, content, bookmarked, selectedLines, updatedAt }) => ({
