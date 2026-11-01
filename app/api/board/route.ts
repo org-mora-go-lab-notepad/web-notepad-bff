@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import {
   type BoardPost,
+  DEFAULT_SETTINGS,
+  getTabStatus,
   hasBoardVisibleSharedContent,
   type SharedGroupData,
 } from "@/src/4-entity/notepad";
@@ -28,8 +30,8 @@ async function handleGET() {
       shareLink: { groupId: string; version: number };
     })[] = result.rows.map((row) => {
       const group = JSON.parse(String(row.snapshot)) as SharedGroupData;
-      const tabs = group.tabs.filter(
-        (tab) => tab.open && hasBoardVisibleSharedContent(tab.content),
+      const tabs = group.tabs.filter((tab) =>
+        hasBoardVisibleSharedContent(tab.content),
       );
       return {
         id: String(row.id),
@@ -44,16 +46,16 @@ async function handleGET() {
         description: "",
         noteCount: group.tabs.filter((tab) => tab.content.trim()).length,
         bookmarkCount: tabs.filter((tab) => tab.bookmarked).length,
-        notes: tabs.map(
-          ({ id, title, content, bookmarked, selectedLines, updatedAt }) => ({
-            id,
-            title,
-            content,
-            bookmarked,
-            selectedLines,
-            updatedAt,
-          }),
-        ),
+        notes: tabs.map((tab) => ({
+          id: tab.id,
+          title: tab.title,
+          content: tab.content,
+          bookmarked: tab.bookmarked,
+          selectedLines: tab.selectedLines,
+          updatedAt: tab.updatedAt,
+          dashboardStatus: getTabStatus(tab, DEFAULT_SETTINGS.tabColorCycle),
+          tabColor: tab.tabColor,
+        })),
         memberCount: Number(row.member_count),
         updatedAt: Number(row.updated_at),
         shareLink: {

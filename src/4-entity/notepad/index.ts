@@ -1,3 +1,4 @@
+export { DEFAULT_SETTINGS } from "./constant";
 export type {
   BoardPost,
   BookmarkEntry,
@@ -6,6 +7,7 @@ export type {
   NoteTab,
   SharedGroupData,
 } from "./type";
+export { getTabStatus } from "./util";
 export {
   applySharedGroupData,
   hasBoardVisibleSharedContent,

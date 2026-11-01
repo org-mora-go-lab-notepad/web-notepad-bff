@@ -1070,11 +1070,22 @@
             "type": "boolean"
           },
           "tabColor": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "gray",
+              "red",
+              "orange",
+              "yellow",
+              "green",
+              "teal",
+              "indigo",
+              "purple",
+              "pink"
+            ]
           },
           "dashboardStatus": {
             "type": "string",
-            "enum": ["note", "todo", "ready", "doing", "done"]
+            "enum": ["icebox", "todo", "ready", "in-progress", "done", "closed"]
           },
           "selectedLines": {
             "type": "array",

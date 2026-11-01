@@ -1,3 +1,5 @@
+import type { TabColor, TabStatus } from "./notepad";
+
 export type BoardPost = {
   id: string;
   local?: boolean;
@@ -14,6 +16,8 @@ export type BoardPost = {
     title: string;
     content: string;
     bookmarked: boolean;
+    dashboardStatus?: TabStatus;
+    tabColor?: TabColor;
     selectedLines?: number[];
     updatedAt: number;
   }[];
