@@ -1,0 +1,38 @@
+# Dependencies
+/node_modules/
+
+# Next.js build output
+/.next/
+/out/
+/build/
+
+# Test coverage
+/coverage/
+/test-results/
+/playwright-report/
+/web-notepad-local.db*
+
+# Environment files
+.env*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Deployment
+.vercel/
+
+# TypeScript
+*.tsbuildinfo
+
+# macOS and editor files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+#etc
+next-env.d.ts

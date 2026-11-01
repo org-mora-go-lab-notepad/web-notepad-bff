@@ -1,0 +1,194 @@
+[
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/01.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/01.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/02.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/02.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/03.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/03.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/04.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/04.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/05.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/05.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/06.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/06.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/07.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/07.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/08.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/08.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/09.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/09.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/15. 개인 이력 서버 API/10.e2e.spec.ts",
+    "target": "01. 앱 기반/15. 개인 이력 서버 API/10.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/01.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/01.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/02.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/02.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/03.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/03.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/04.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/04.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/05.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/05.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/06.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/06.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/07.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/07.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/08.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/08.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/09.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/09.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/10.e2e.spec.ts",
+    "target": "01. 앱 기반/16. 공유 그룹 서버 입력 검증/10.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/01.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/01.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/02.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/02.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/03.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/03.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/04.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/04.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/05.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/05.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/06.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/06.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/07.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/07.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/08.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/08.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/09.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/09.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/17. 서버 응답과 게시판 계약/10.e2e.spec.ts",
+    "target": "01. 앱 기반/17. 서버 응답과 게시판 계약/10.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/18. 탭 유실 방지/01.e2e.spec.ts",
+    "target": "01. 앱 기반/18. 탭 유실 방지/01.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/18. 탭 유실 방지/02.e2e.spec.ts",
+    "target": "01. 앱 기반/18. 탭 유실 방지/02.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/18. 탭 유실 방지/03.e2e.spec.ts",
+    "target": "01. 앱 기반/18. 탭 유실 방지/03.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/18. 탭 유실 방지/04.e2e.spec.ts",
+    "target": "01. 앱 기반/18. 탭 유실 방지/04.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/18. 탭 유실 방지/05.e2e.spec.ts",
+    "target": "01. 앱 기반/18. 탭 유실 방지/05.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/18. 탭 유실 방지/08.e2e.spec.ts",
+    "target": "01. 앱 기반/18. 탭 유실 방지/06.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/19. 빈 탭 직접 닫기/04.e2e.spec.ts",
+    "target": "01. 앱 기반/19. 빈 탭 직접 닫기/01.e2e.spec.ts"
+  },
+  {
+    "source": "01. 앱 기반/19. 빈 탭 직접 닫기/05.e2e.spec.ts",
+    "target": "01. 앱 기반/19. 빈 탭 직접 닫기/02.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/18. 공유 그룹과 알림/07.e2e.spec.ts",
+    "target": "03. 그룹과 기록/18. 공유 그룹과 알림/01.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/18. 공유 그룹과 알림/09.e2e.spec.ts",
+    "target": "03. 그룹과 기록/18. 공유 그룹과 알림/02.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/20. 공유 그룹 - 참여와 공유 해제/05.e2e.spec.ts",
+    "target": "03. 그룹과 기록/20. 공유 그룹 - 참여와 공유 해제/01.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/20. 공유 그룹 - 참여와 공유 해제/06.e2e.spec.ts",
+    "target": "03. 그룹과 기록/20. 공유 그룹 - 참여와 공유 해제/02.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/21. 게시판 자동 목록과 접근/02.e2e.spec.ts",
+    "target": "03. 그룹과 기록/21. 게시판 자동 목록과 접근/01.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/23. 알람 대상 유효성/01.e2e.spec.ts",
+    "target": "03. 그룹과 기록/23. 알람 대상 유효성/01.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/23. 알람 대상 유효성/02.e2e.spec.ts",
+    "target": "03. 그룹과 기록/23. 알람 대상 유효성/02.e2e.spec.ts"
+  },
+  {
+    "source": "03. 그룹과 기록/23. 알람 대상 유효성/03.e2e.spec.ts",
+    "target": "03. 그룹과 기록/23. 알람 대상 유효성/03.e2e.spec.ts"
+  },
+  {
+    "source": "05. 화면과 설정/26. Turso 변경 이력/03.e2e.spec.ts",
+    "target": "05. 화면과 설정/26. Turso 변경 이력/01.e2e.spec.ts"
+  },
+  {
+    "source": "05. 화면과 설정/26. Turso 변경 이력/10.e2e.spec.ts",
+    "target": "05. 화면과 설정/26. Turso 변경 이력/02.e2e.spec.ts"
+  }
+]
