@@ -3,7 +3,7 @@
   "info": {
     "title": "Web Notepad BFF API",
     "version": "1.0.1",
-    "description": "카카오 OAuth/세션은 web-notepad에 유지합니다. BFF는 매 요청의 x-notepad-context + x-notepad-signature를 검증합니다.\n\n로컬 로그인 세션으로 실행하려면 http://localhost:3000/docs 를 사용하세요. 직접 호출: context=base64url(UTF-8 JSON GatewayContext), signature=base64url(HMAC-SHA256(NOTEPAD_BFF_SECRET, context)). 메서드·경로·query·본문이 변경되면 새 서명이 필요합니다. 서버 비밀키를 Swagger/브라우저에 입력하지 마세요.\n\n변경 요청은 실제 데이터를 변경합니다. 사용자 승인 없는 탭 삭제/자동 정리를 하지 않습니다."
+    "description": "카카오 OAuth와 세션은 web-notepad에 유지합니다. 브라우저는 /api/auth/bff에서 받은 60초짜리 Origin 바인딩 Bearer 토큰으로 BFF 업무 API를 직접 호출합니다. 서버 호출은 기존 게이트웨이 서명을 사용할 수 있습니다. 서버 비밀키는 브라우저에 입력하지 않습니다. DB 변경 요청은 실제 데이터를 변경하므로 테스트는 격리된 로컬 DB에서만 수행합니다."
   },
   "servers": [
     {
@@ -300,9 +300,22 @@
                     },
                     "shareLink": {
                       "$ref": "#/components/schemas/ShareLink"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "BrowserToken 인증 시 반환하는 프런트 공유 URL"
                     }
                   },
-                  "required": ["shareLink", "group", "revision"]
+                  "required": ["group", "revision"],
+                  "anyOf": [
+                    {
+                      "required": ["shareLink"]
+                    },
+                    {
+                      "required": ["url"]
+                    }
+                  ]
                 }
               }
             }
@@ -1284,9 +1297,22 @@
           },
           "shareLink": {
             "$ref": "#/components/schemas/ShareLink"
+          },
+          "inviteUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "BrowserToken 인증 시 반환하는 프런트 초대 URL"
           }
         },
-        "required": ["id", "groupName", "notes", "shareLink"]
+        "required": ["id", "groupName", "notes"],
+        "anyOf": [
+          {
+            "required": ["shareLink"]
+          },
+          {
+            "required": ["inviteUrl"]
+          }
+        ]
       },
       "GroupEntry": {
         "type": "object",
