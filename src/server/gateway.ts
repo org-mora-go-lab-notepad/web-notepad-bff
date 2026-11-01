@@ -3,6 +3,8 @@ import "server-only";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
+import { withLocalDatabaseQueue } from "./database";
+
 export type GatewayUser = {
   id: string;
   nickname: string;
@@ -98,6 +100,8 @@ export function withGateway(
       headers,
       body: ["GET", "HEAD"].includes(request.method) ? undefined : body,
     });
-    return contextStore.run(context, () => handler(originalRequest));
+    return withLocalDatabaseQueue(async () =>
+      contextStore.run(context, () => handler(originalRequest)),
+    );
   };
 }

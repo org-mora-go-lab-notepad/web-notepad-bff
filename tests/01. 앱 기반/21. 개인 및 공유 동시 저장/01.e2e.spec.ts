@@ -27,7 +27,7 @@ test("1. 개인과 공유 그룹을 동시에 저장해도 잠금 오류 없이 
   }));
   const results = await Promise.all(
     users.map(async (user) => {
-      const [personal, shared] = await Promise.all([
+      const [personal, shared, personalRead, sharedRead] = await Promise.all([
         request.post("/api/notepad/history", {
           headers: user.headers,
           data: { eventId: user.eventId, snapshot: snapshot([user.content]) },
@@ -36,11 +36,25 @@ test("1. 개인과 공유 그룹을 동시에 저장해도 잠금 오류 없이 
           headers: user.headers,
           data: { group: user.group },
         }),
+        getApi(request, "/api/notepad/history", { headers: user.headers }),
+        getApi(request, "/api/groups", { headers: user.headers }),
       ]);
-      return { personal: personal.status(), shared: shared.status() };
+      return {
+        personal: personal.status(),
+        shared: shared.status(),
+        personalRead: personalRead.status(),
+        sharedRead: sharedRead.status(),
+      };
     }),
   );
-  expect(results).toEqual(users.map(() => ({ personal: 200, shared: 200 })));
+  expect(results).toEqual(
+    users.map(() => ({
+      personal: 200,
+      shared: 200,
+      personalRead: 200,
+      sharedRead: 200,
+    })),
+  );
   for (const user of users) {
     const history = await getApi(request, "/api/notepad/history", {
       headers: user.headers,
