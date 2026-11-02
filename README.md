@@ -11,11 +11,11 @@ npm run dev
 
 BFF는 `http://localhost:3001`, 프런트는 `http://localhost:3000`에서 실행합니다. 개발 모드에서만 공통 로컬 서명 키와 `file:web-notepad-local.db`를 기본 사용합니다. 기존 로컬 DB를 이어 쓰려면 BFF의 `TURSO_DATABASE_URL`에 기존 파일의 절대 경로를 지정합니다. DB를 복사하거나 비우는 작업은 필요하지 않습니다.
 
-기존 AUTH_SECRET을 모르는 경우에도 연동할 수 있습니다. 세션·공유 링크의 검증과 서명은 프런트에 유지하며 기존 키를 변경하지 않습니다. BFF에는 AUTH_SECRET·Kakao 키·SHARE_TOKEN_SECRET이 필요하지 않습니다. 로컬 실행기도 이 키들을 BFF에 전달하지 않습니다.
+기존 AUTH_SECRET을 모르는 경우에도 연동할 수 있습니다. 카카오 세션과 기존 공유 링크 검증은 프런트에 유지하며 기존 키를 변경하지 않습니다. 신규 공유 링크는 BFF 전용 키로 서명합니다. BFF에는 AUTH_SECRET·Kakao 키·SHARE_TOKEN_SECRET이 필요하지 않습니다. 로컬 실행기도 이 키들을 BFF에 전달하지 않습니다.
 
 ## API 경계
 
-브라우저 → web-notepad `/api/...` → 서명된 서버 요청 → web-notepad-bff `/api/...` → 기존 Turso DB.
+브라우저 → web-notepad `/api/auth/bff`에서 카카오 세션 기반 단기 토큰 발급 → web-notepad-bff `/api/...` 직접 호출 → 기존 Turso DB. 기존 서버 게이트웨이 서명 요청도 호환됩니다.
 
 | 경로                                      | 메서드      | 책임                                  |
 | ----------------------------------------- | ----------- | ------------------------------------- |
@@ -58,7 +58,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 10개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 보드 전체 상태 집계 1개를 보강해 총 67개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
+BE 전용 48개 시나리오와 대응 문서를 이관하고 서버 신뢰 경계 10개, 개인·공유 동시 저장 1개, Swagger 문서 3개를 추가했습니다. 보드 전체 상태 집계 1개를 보강해 총 68개입니다. BFF E2E는 독립 실행하며 테스트 DB만 사용합니다. UI·카카오 인증·프런트/BFF 통합 E2E는 web-notepad에 남습니다. [PRD](PRD.md), [테스트 정책](tests/README.md), [원본→이관 파일 대응](tests/migration.json)을 참고하세요.
 
 `src/4-entity/notepad`에는 API가 사용하는 데이터 계약·정규화 함수만 포함합니다. UI에서도 필요한 순수 모델은 프런트에 유지했으며 서버의 DB·라우트 구현은 이 저장소만 소유합니다. 데이터 계약 변경 시 양쪽 호환성과 프런트 통합 E2E를 함께 검증해야 합니다.
 

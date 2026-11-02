@@ -75,7 +75,7 @@ export const getTitleFromContent = (content: unknown, fallback: string) => {
 
 // Explicit status keeps shared cards stable when collaborators use different color settings.
 export const getTabStatus = (
-  tab: NoteTab,
+  tab: Pick<NoteTab, "dashboardStatus" | "tabColor">,
   tabColorCycle: TabColor[],
 ): TabStatus => {
   if (tab.dashboardStatus === "closed") return "done";

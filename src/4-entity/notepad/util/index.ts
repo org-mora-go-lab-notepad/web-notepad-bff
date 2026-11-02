@@ -1,3 +1,4 @@
+export { getTabStatus } from "./note";
 export {
   applySharedGroupData,
   hasBoardVisibleSharedContent,
