@@ -45,7 +45,7 @@ test("3. 상세 조회는 닫힌 탭까지 다섯 상태의 노트와 색상을 
     const original = before.groups.find(
       (item: { id: string }) => item.id === group.id,
     );
-    const response = await getApi(request, "/api/board");
+    const response = await getApi(request, "/api/board", { headers });
     expect(response.status()).toBe(200);
     const { posts } = await response.json();
     const post = posts.find((item: { id: string }) => item.id === group.id);

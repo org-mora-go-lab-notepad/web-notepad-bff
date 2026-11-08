@@ -58,7 +58,9 @@ export const boardTest = base.extend<{
     if (!shared.ok())
       throw Error("Cannot prepare shared group: " + shared.status());
     const { group } = await shared.json();
-    const { posts } = (await (await getApi(request, "/api/board")).json()) as {
+    const { posts } = (await (
+      await getApi(request, "/api/board", { headers })
+    ).json()) as {
       posts: BoardPost[];
     };
     const post = posts.find((item) => item.id === group.id);

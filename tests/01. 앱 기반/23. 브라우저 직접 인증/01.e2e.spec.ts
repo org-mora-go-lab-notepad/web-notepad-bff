@@ -17,7 +17,12 @@ test("1. 서명된 단기 토큰으로 BFF를 직접 읽는다", async ({ reques
   expect(preflight.headers()["access-control-allow-origin"]).toBe(origin);
   const response = await getApi(request, "http://127.0.0.1:3102/api/board", {
     headers: {
-      Authorization: "Bearer " + browserToken(),
+      Authorization:
+        "Bearer " +
+        browserToken(undefined, {
+          id: "board-reader",
+          nickname: "Board reader",
+        }),
       Origin: origin,
       "x-user-id": "forged-owner",
     },

@@ -1,6 +1,10 @@
 import { expect } from "@playwright/test";
 
-import { apiTest as test } from "@/tests/__fixture__";
+import {
+  apiTest as test,
+  SESSION_COOKIE,
+  signedSession,
+} from "@/tests/__fixture__";
 
 import { getApi } from "../../__util__";
 
@@ -10,7 +14,14 @@ test("9. role admin 쿼리는 게시판 응답에 관리자 권한을 추가하�
   await test.step(
     "시나리오: 9. role admin 쿼리는 게시판 응답에 관리자 권한을 추가하지 않는다 — 준비 조건부터 공개 UI 또는 API 실행과 사용자 결과 검증까지 독립적으로 추적한다",
     async () => {
-      const response = await getApi(page.request, "/api/board?role=admin");
+      const token = signedSession({
+        id: "admin-query-reader",
+        nickname: "Reader",
+        expiresAt: Date.now() + 60_000,
+      });
+      const response = await getApi(page.request, "/api/board?role=admin", {
+        headers: { Cookie: SESSION_COOKIE + "=" + token },
+      });
 
       const payload = await response.json();
 
