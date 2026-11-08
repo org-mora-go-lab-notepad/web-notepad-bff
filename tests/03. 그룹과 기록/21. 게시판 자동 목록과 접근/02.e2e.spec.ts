@@ -45,7 +45,7 @@ test("2. Notes는 닫힌 탭을 포함해 다섯 상태의 전체 카드를 합�
     const original = before.groups.find(
       (item: { id: string }) => item.id === group.id,
     );
-    const response = await getApi(request, "/api/board");
+    const response = await getApi(request, "/api/board", { headers });
     expect(response.status()).toBe(200);
     const { posts } = await response.json();
     const post = posts.find((item: { id: string }) => item.id === group.id);
